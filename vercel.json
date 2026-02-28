@@ -1,5 +1,5 @@
 {
   "crons": [
-    { "path": "/api/cron/triage?secret=__CRON_SECRET__", "schedule": "0 */2 * * *" }
+    { "path": "/api/cron/triage?secret=__CRON_SECRET__", "schedule": "30 3 * * *" }
   ]
 }
