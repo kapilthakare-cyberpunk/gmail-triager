@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { relabelMessage } from "@/lib/triage.pipeline";
 
 async function readCategory(req: Request): Promise<string | null> {
@@ -7,7 +7,7 @@ async function readCategory(req: Request): Promise<string | null> {
 
   if (ct.includes("application/json")) {
     const body = await req.json().catch(() => null);
-    const category = body?.category;
+    const category = (body as any)?.category;
     return typeof category === "string" ? category : null;
   }
 
@@ -23,16 +23,20 @@ async function readCategory(req: Request): Promise<string | null> {
 }
 
 export async function POST(req: Request, ctx: { params: { messageId: string } }) {
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const category = await readCategory(req);
-  if (!category) return Response.json({ ok: false, error: "missing category" }, { status: 400 });
+  if (!category) {
+    return Response.json({ ok: false, error: "missing category" }, { status: 400 });
+  }
 
   const allowed = new Set(["needs-attention", "fyi", "receipt", "newsletter", "system", "done"]);
-  if (!allowed.has(category)) return Response.json({ ok: false, error: "invalid category" }, { status: 400 });
+  if (!allowed.has(category)) {
+    return Response.json({ ok: false, error: "invalid category" }, { status: 400 });
+  }
 
   const result = await relabelMessage({ messageId: ctx.params.messageId, category });
   return Response.json(result);

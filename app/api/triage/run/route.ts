@@ -1,9 +1,9 @@
 import { runTriage } from "@/lib/triage.pipeline";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function POST() {
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
